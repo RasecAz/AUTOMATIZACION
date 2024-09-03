@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\PythonApplication1",
+    "\\PythonApplication1\\PythonApplication1",
+    "\\PythonApplication1\\PythonApplication1\\infrastructure",
+    "\\PythonApplication1\\PythonApplication1\\infrastructure\\email_automation"
+  ],
+  "SelectedNode": "\\PythonApplication1\\PythonApplication1\\infrastructure\\email_automation\\gmail_service.py",
+  "PreviewInSolutionExplorer": false
+}

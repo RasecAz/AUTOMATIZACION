@@ -1,0 +1,50 @@
+
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+
+# Configuración
+IMG_SIZE = 224
+BATCH_SIZE = 32
+EPOCHS = 10
+NUM_CLASSES = 2  # Mikrotik y no-Mikrotik
+
+# Directorio de datos
+train_dir = 'ruta/a/tu/directorio/de/entrenamiento'
+val_dir = 'ruta/a/tu/directorio/de/validacion'
+
+# Generadores de datos
+train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=20, zoom_range=0.15,
+                                   width_shift_range=0.2, height_shift_range=0.2, shear_range=0.15,
+                                   horizontal_flip=True, fill_mode="nearest")
+val_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(IMG_SIZE, IMG_SIZE),
+                                                    batch_size=BATCH_SIZE, class_mode='binary')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(IMG_SIZE, IMG_SIZE),
+                                                batch_size=BATCH_SIZE, class_mode='binary')
+
+# Modelo preentrenado
+base_model = MobileNetV2(weights="imagenet", include_top=False, input_shape=(IMG_SIZE, IMG_SIZE, 3))
+base_model.trainable = False  # Congelar la base preentrenada
+
+# Añadir nuevas capas
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)
+predictions = Dense(NUM_CLASSES, activation='softmax')(x)
+
+# Crear el modelo
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compilar el modelo
+model.compile(optimizer=Adam(lr=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# Entrenar el modelo
+model.fit(train_generator, epochs=EPOCHS, validation_data=val_generator)
+
+# Guardar el modelo entrenado
+model.save('mikrotik_classifier_model.h5')
